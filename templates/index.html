@@ -1,0 +1,97 @@
+<html>
+    <head>
+        <title>Home - CV Cube Solver</title>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='twistysim.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery.redirect.js') }}"></script>
+
+        <script>
+            $(document).ready(function(){
+                var i = 0;
+                var images = [];
+
+                // capture each face
+                $("#video").click(function(){
+
+                    const canvas = window.canvas = document.querySelector("#canvas" + i);
+                    canvas.width = 180;
+                    canvas.height = 135;
+
+                    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                    images[i] = canvas.toDataURL("image/png", 0.8);
+                    i += 1;
+                    cube.forward();
+
+                    if (i < 6) {
+                        $("#prompt").text("Click screen to capture face " + (i + 1) + ".");
+                    } else {
+                        $("#prompt").text("Submit cube.");
+                        $("#submit").prop("disabled", false);
+                    }
+                });
+
+                // submit six faces via post
+                $("#submit").click(function(){
+                    $.redirect("/solve", {"images": JSON.stringify(images)});
+                });
+
+            });
+        </script>
+    </head>
+
+
+    <body>
+        <h1>CV Cube Solver</h1>
+
+        <video playsinline autoplay width="480" height="360" id="video"></video>
+        <br>
+        <p id="prompt">Click screen to capture face 1.</p>
+        <button id="submit" disabled>Submit</button>
+        <br>
+
+        <script>
+            // video
+            const video = document.querySelector('video');
+
+            function handleSuccess(stream) {
+              window.stream = stream; // make stream available to browser console
+              video.srcObject = stream;
+            }
+
+            function handleError(error) {
+              console.log('navigator.getUserMedia error: ', error);
+            }
+
+            navigator.mediaDevices.getUserMedia({ video: true }).then(handleSuccess).catch(handleError);
+
+
+
+            // generate cube
+            var cube = TTk.AlgorithmPuzzle(3)
+                .size({width:300, height:300})
+                .rotate(true);
+
+            cube.controls(false)
+                .showAlg(false)
+                .hoverButtons(true)
+                .hoverAlg(false);
+
+            cube.fc('ddddbddddddddrddddddddyddddddddgddddddddoddddddddwdddd')
+            cube.case("y y y x x2");
+
+            // render
+            cube();
+        </script>
+        <br>
+
+        <canvas id="canvas0"></canvas>
+        <canvas id="canvas1"></canvas>
+        <canvas id="canvas2"></canvas>
+        <br>
+        <canvas id="canvas3"></canvas>
+        <canvas id="canvas4"></canvas>
+        <canvas id="canvas5"></canvas>
+
+    </body>
+</html>

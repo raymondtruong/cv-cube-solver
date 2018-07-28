@@ -1,0 +1,15 @@
+<html>
+    <head>
+        <title>{{ test }} - CV Cube Solver</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    </head>
+
+    <body>
+        <h1>CV Cube Solver</h1>
+        <ul>
+            {% for image in images %}
+            <li><img src="{{ image }}" /></li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>
