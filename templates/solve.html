@@ -7,8 +7,11 @@
     <body>
         <h1>CV Cube Solver</h1>
         <ul>
-            {% for image in images %}
-            <li><img src="{{ image }}" /></li>
+            {% for image in old_images %}
+            <li>
+                <img src="{{ old_images[loop.index0] }}" />
+                <img src="{{ new_images[loop.index0] }}" />
+            </li>
             {% endfor %}
         </ul>
     </body>
