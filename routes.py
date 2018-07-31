@@ -27,6 +27,12 @@ def solve():
                   [[None, None, None], [None, None, None], [None, None, None]],
                   [[None, None, None], [None, None, None], [None, None, None]],
                   [[None, None, None], [None, None, None], [None, None, None]]]
+    colours = [[[None, None, None], [None, None, None], [None, None, None]],
+              [[None, None, None], [None, None, None], [None, None, None]],
+              [[None, None, None], [None, None, None], [None, None, None]],
+              [[None, None, None], [None, None, None], [None, None, None]],
+              [[None, None, None], [None, None, None], [None, None, None]],
+              [[None, None, None], [None, None, None], [None, None, None]]]
 
     for i in range(6):
         # decode image
@@ -44,22 +50,39 @@ def solve():
                 square = cropped_source[(row * 48):((row + 1) * 48), (column * 48):((column + 1) * 48)]
 
                 # extract colour
-                colour = square[24, 24]
-                rgb = (colour[2], colour[1], colour[0])
-                print("{} = {}".format(i, identify_colour(rgb)), file=sys.stderr)
+                pixel_colour = square[24, 24]     # midpoint
+                rgb = (pixel_colour[2], pixel_colour[1], pixel_colour[0])
+                colours[i][row][column] = identify_colour(rgb)
 
                 # encode square
                 ret, x = cv2.imencode(".png", square)
                 b64_squares[i][row][column] = "data:image/png;base64," + str(base64.b64encode(x))[2:-1]
 
+        print()
 
-    return render_template("solve.html", test="Test", squares=b64_squares)
+    return render_template("solve.html", test="Test", squares=b64_squares, colours=colours)
 
 
 def identify_colour(rgb):
-    # todo
-    hex = "#%02x%02x%02x" % rgb
-    hsv = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
-    print(hsv, file=sys.stderr)
+    colour = "indeterminate"
 
-    return hex
+    hex = "#%02x%02x%02x" % rgb
+    hue, saturation, value = colorsys.rgb_to_hsv(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255)
+
+    # colour logic
+    if (saturation < 0.25):
+        colour = "white"
+    elif (hue > 0.15 and hue < 0.32):
+        colour = "yellow"
+    elif (hue >= 0.32 and hue < 0.45):
+        colour = "green"
+    elif (hue >= 0.45 and hue < 0.7):
+        colour = "blue"
+    else:
+        if (value <= 0.77):
+            colour = "red"
+        else:
+            colour = "orange"
+
+    print("{} - ({}, {}, {})".format(hex, hue, saturation, value), file=sys.stderr)
+    return colour
