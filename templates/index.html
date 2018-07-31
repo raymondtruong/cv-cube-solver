@@ -2,21 +2,36 @@
     <head>
         <title>Home - CV Cube Solver</title>
 
+        <style>
+            #video_box{
+                position:relative;
+            }
+            #video_overlays .overlay {
+                position:absolute;
+                width:300px;
+                height:300px;
+                z-index:300000;
+                bottom:30px;
+                left:85px;
+                text-align:center;
+            }
+        </style>
+
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='twistysim.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='jquery.redirect.js') }}"></script>
-
         <script>
             $(document).ready(function(){
+                const faces = ["orange", "blue", "red", "green", "yellow", "white"];
                 var i = 0;
                 var images = [];
 
                 // capture each face
-                $("#video").click(function(){
+                $("#video_box").click(function(){
 
                     const canvas = window.canvas = document.querySelector("#canvas" + i);
-                    canvas.width = 180;
-                    canvas.height = 135;
+                    canvas.width = 240;
+                    canvas.height = 180;
 
                     canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
                     images[i] = canvas.toDataURL("image/png");
@@ -24,7 +39,7 @@
                     cube.forward();
 
                     if (i < 6) {
-                        $("#prompt").text("Click screen to capture face " + (i + 1) + ".");
+                        $("#prompt").html("Capturing " + faces[i] + " face.<br>Click screen to capture face " + (i + 1) + ".");
                     } else {
                         $("#prompt").text("Submit cube.");
                         $("#submit").prop("disabled", false);
@@ -44,9 +59,20 @@
     <body>
         <h1>CV Cube Solver</h1>
 
-        <video playsinline autoplay width="480" height="360" id="video"></video>
+        <div id="video_box">
+            <div id="video_overlays">
+                <img src="static/grid.png" class="overlay"/>
+            </div>
+            <div>
+                <video playsinline autoplay width="480" height="360" id="video"></video>
+            </div>
+        </div>
+
+
+
         <br>
-        <p id="prompt">Click screen to capture face 1.</p>
+        <p>Hold the cube as demonstrated below, and fit each square within the grid.<p>
+        <p id="prompt">Capturing orange face.<br>Click screen to capture face 1.</p>
         <button id="submit" disabled>Submit</button>
         <br>
 

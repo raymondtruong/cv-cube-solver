@@ -1,0 +1,13 @@
+#video_box{
+    position:relative;
+}
+#video_overlays {
+    position:absolute;
+    width:160px;
+    min-height:40px;
+    background-color:#0000000;
+    z-index:300000;
+    bottom:10px;
+    left:10px;
+    text-align:center;
+}
