@@ -7,10 +7,18 @@
     <body>
         <h1>CV Cube Solver</h1>
         <ul>
-            {% for image in old_images %}
+            {% for face in range(6) %}
             <li>
-                <img src="{{ old_images[loop.index0] }}" />
-                <img src="{{ new_images[loop.index0] }}" />
+                <ul>
+                    {% for row in range(3) %}
+                    <li>
+                        <img src="{{ squares[face][row][0] }}" />
+                        <img src="{{ squares[face][row][1] }}" />
+                        <img src="{{ squares[face][row][2] }}" />
+                    </li>
+                    {% endfor %}
+
+                </ul>
             </li>
             {% endfor %}
         </ul>
