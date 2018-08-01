@@ -1,13 +1,32 @@
+h1 {
+    margin-bottom: 1px;
+}
+
+canvas {
+    height: 0px;
+    width: 0px;
+}
+
 #video_box{
     position:relative;
 }
-#video_overlays {
+
+#video_overlays .overlay {
     position:absolute;
-    width:160px;
-    min-height:40px;
-    background-color:#0000000;
+    width:330px;    /* 300 */
+    height:330px;
     z-index:300000;
-    bottom:10px;
-    left:10px;
+    bottom:15px;    /* 30 */
+    left:75px;      /* 85 */
     text-align:center;
+}
+
+.row{
+
+}
+
+.column{
+    width:500px;
+    display: inline-block;
+    text-align: center;
 }

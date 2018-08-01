@@ -1,11 +1,54 @@
 <html>
     <head>
-        <title>{{ test }} - CV Cube Solver</title>
+        <title>CV Cube Solver</title>
+
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='twistysim.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery.redirect.js') }}"></script>
     </head>
 
     <body>
-        <h1>CV Cube Solver</h1>
+        <p>
+            <h1>CV Cube Solver</h1>
+            <a href="truo.ng">by Raymond Truong</a>
+            <br><br>
+
+            Cube solved! Solution, in Half Turn Metric: <br>
+            <b>{{ solution }}</b><br><br>
+
+            Or, visualize below:
+        </p>
+
+        <div class="row">
+            <div class="column">
+                <div id="tp1"></div>
+                <script>
+                    // generate cube
+                    var cube = TTk.AlgorithmPuzzle(3)
+                        .size({width:300, height:300})
+                        .rotate(true);
+
+                    cube.controls(true)
+                        .showAlg(false)
+                        .hoverButtons(true)
+                        .hoverAlg(false);
+
+                    cube.case("{{ solution|safe }}")
+
+                    // render
+                    cube("#tp1");
+                </script>
+            </div>
+        </div>
+
+        <p>
+            <br>
+            <a href="../">Go back</a>
+        </p>
+
+<!--
         <ul>
             {% for face in range(6) %}
             <li>
@@ -24,7 +67,6 @@
             </li>
             {% endfor %}
         </ul>
-
-        <p>{{ solution }}</p>
+-->
     </body>
 </html>

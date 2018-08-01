@@ -15,7 +15,7 @@ import sys
 @app.route("/")
 @app.route("/index")
 def index():
-    return render_template("index.html", test="Home")
+    return render_template("index.html")
 
 
 @app.route("/solve", methods=["POST"])
@@ -62,13 +62,19 @@ def solve():
         print()
 
     colours[5][1][1] = "w" # manually override white center
-    state = generate_cube_state(colours)
+    cube_state = generate_cube_state(colours)
+    k_state = kociemba_state(cube_state)
+
+    # for viz
+    cube_state = cube_state[27:36] + cube_state[9:27] + cube_state[:9] + cube_state[36:]
+
+
     try:
-        solution = kociemba.solve(state)
+        solution = kociemba.solve(k_state)
     except ValueError as e:
         solution = e
 
-    return render_template("solve.html", test="Test", squares=b64_squares, colours=colours, solution=solution)
+    return render_template("solve.html", test="Test", squares=b64_squares, colours=colours, state=cube_state, solution=solution)
 
 
 def identify_colour(rgb):
@@ -78,7 +84,7 @@ def identify_colour(rgb):
     hue, saturation, value = colorsys.rgb_to_hsv(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255)
 
     # colour logic
-    if (saturation < 0.25):
+    if (saturation < 0.2):
         colour = "w"
     elif (hue < 0.11):
         colour = "o"
@@ -119,7 +125,6 @@ def generate_cube_state(c):
 
     URFDLB
     """
-    mappings = {"u": 4, "r": 3, "f": 2, "d": 5, "l": 1, "b": 0}
 
     u = [c[4][0][2], c[4][1][2], c[4][2][2], c[4][0][1], c[4][1][1], c[4][2][1], c[4][0][0], c[4][1][0], c[4][2][0]]
     r = [c[3][0][0], c[3][0][1], c[3][0][2], c[3][1][0], c[3][1][1], c[3][1][2], c[3][2][0], c[3][2][1], c[3][2][2]]
@@ -130,14 +135,16 @@ def generate_cube_state(c):
     net = u + r + f + d + l + b
 
     state = ''.join(net)
-
-    # replace colours
-    state = state.replace('y', 'U')
-    state = state.replace('g', 'R')
-    state = state.replace('r', 'F')
-    state = state.replace('w', 'D')
-    state = state.replace('b', 'L')
-    state = state.replace('o', 'B')
-
-    print(state, file=sys.stderr)
     return state
+
+
+def kociemba_state(c):
+    # replace colours
+    c = c.replace('y', 'U')
+    c = c.replace('r', 'R')
+    c = c.replace('b', 'F')
+    c = c.replace('w', 'D')
+    c = c.replace('o', 'L')
+    c = c.replace('g', 'B')
+
+    return c

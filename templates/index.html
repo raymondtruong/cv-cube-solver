@@ -1,52 +1,45 @@
 <html>
     <head>
-        <title>Home - CV Cube Solver</title>
+        <title>CV Cube Solver</title>
 
-        <style>
-            #video_box{
-                position:relative;
-            }
-            #video_overlays .overlay {
-                position:absolute;
-                width:330px;    /* 300 */
-                height:330px;
-                z-index:300000;
-                bottom:15px;    /* 30 */
-                left:75px;      /* 85 */
-                text-align:center;
-            }
-        </style>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='twistysim.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='jquery.redirect.js') }}"></script>
+
         <script>
             $(document).ready(function(){
-                const faces = ["orange", "blue", "red", "green", "yellow", "white"];
+                const faces = ["green", "orange", "blue", "red", "yellow", "white"];
                 var i = 0;
                 var images = [];
 
-                // capture each face
+                // when video is clicked
                 $("#video_box").click(function(){
 
-                    const canvas = window.canvas = document.querySelector("#canvas" + i);
+                    // capture image
+                    const canvas = window.canvas = document.querySelector("#canvas");
+                    canvas.style.display="none";
                     canvas.width = 240;
                     canvas.height = 180;
+                    canvas.getContext('2d').drawImage(video, 0, 0, 240, 180);
 
-                    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                    // convert to base 64
                     images[i] = canvas.toDataURL("image/png");
+
+                    // increment
                     i += 1;
                     cube.forward();
 
                     if (i < 6) {
-                        $("#prompt").html("Capturing " + faces[i] + " face.<br>Click screen to capture face " + (i + 1) + ".");
+                        $("#prompt").text("Click screen to capture face " + (i + 1) + " (" + faces[i] + ").");
                     } else {
-                        $("#prompt").text("Submit cube.");
+                        $("#prompt").text("All faces captured!");
                         $("#submit").prop("disabled", false);
                     }
                 });
 
-                // submit six faces via post
+                // submit all faces via POST request and redirect
                 $("#submit").click(function(){
                     $.redirect("/solve", {"images": JSON.stringify(images)});
                 });
@@ -57,31 +50,63 @@
 
 
     <body>
-        <h1>CV Cube Solver</h1>
+        <p>
+            <h1>CV Cube Solver</h1>
+            <a href="truo.ng">by Raymond Truong</a>
+            <br><br>
+        </p>
 
-        <div id="video_box">
-            <div id="video_overlays">
-                <img src="static/grid.png" class="overlay"/>
+
+        <div class="row">
+            <div class="column">
+                <div id="video_box">
+                    <div id="video_overlays">
+                        <img src="{{ url_for('static', filename='grid.png') }}" class="overlay"/>
+                    </div>
+                    <div>
+                        <video playsinline autoplay width="480" height="360" id="video"></video>
+                    </div>
+                </div>
             </div>
-            <div>
-                <video playsinline autoplay width="480" height="360" id="video"></video>
+
+            <div class="column">
+                <div id="tp1"></div>
+                <script>
+                    // generate cube
+                    var cube = TTk.AlgorithmPuzzle(3)
+                        .size({width:300, height:300})
+                        .rotate(false);
+
+                    cube.controls(false)
+                        .showAlg(false)
+                        .hoverButtons(true)
+                        .hoverAlg(false);
+
+                    cube.fc('ddddoddddddddbddddddddyddddddddrddddddddgddddddddwdddd')
+                    cube.case("y y y x x2");
+
+                    // render
+                    cube("#tp1");
+                </script>
+            </div>
+
+            <div class="column">
+                <canvas id="canvas"></canvas>
             </div>
         </div>
 
 
-
-        <br>
-        <p>Hold the cube as demonstrated below, and fit each square within the grid.<p>
-        <p id="prompt">Capturing orange face.<br>Click screen to capture face 1.</p>
+        <p><br>Hold the cube as demonstrated, and position each square inside the grid.<p>
+        <p id="prompt">Click screen to capture face 1 (green).</p>
         <button id="submit" disabled>Submit</button>
         <br>
 
         <script>
-            // video
+            // access user webcam
             const video = document.querySelector('video');
 
             function handleSuccess(stream) {
-              window.stream = stream; // make stream available to browser console
+              window.stream = stream;
               video.srcObject = stream;
             }
 
@@ -91,33 +116,7 @@
 
             navigator.mediaDevices.getUserMedia({ video: true }).then(handleSuccess).catch(handleError);
 
-
-
-            // generate cube
-            var cube = TTk.AlgorithmPuzzle(3)
-                .size({width:300, height:300})
-                .rotate(true);
-
-            cube.controls(false)
-                .showAlg(false)
-                .hoverButtons(true)
-                .hoverAlg(false);
-
-            cube.fc('ddddbddddddddrddddddddyddddddddgddddddddoddddddddwdddd')
-            cube.case("y y y x x2");
-
-            // render
-            cube();
         </script>
         <br>
-
-        <canvas id="canvas0"></canvas>
-        <canvas id="canvas1"></canvas>
-        <canvas id="canvas2"></canvas>
-        <br>
-        <canvas id="canvas3"></canvas>
-        <canvas id="canvas4"></canvas>
-        <canvas id="canvas5"></canvas>
-
     </body>
 </html>
