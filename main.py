@@ -1,15 +1,13 @@
-from app import app
-from flask import render_template, request
+from flask import Flask, render_template, request
+import kociemba    # TODO: install via pip
 import json
-import matplotlib.pyplot as plt
 import base64
-from PIL import Image
-from io import BytesIO
-import numpy as np
 import cv2
+import numpy as np
 import colorsys
-from app import kociemba # temp
-import sys
+
+
+app = Flask(__name__)
 
 
 @app.route("/")
@@ -21,13 +19,7 @@ def index():
 @app.route("/solve", methods=["POST"])
 def solve():
 
-    b64_raw_images = json.loads(request.form["images"])
-    b64_squares = [[[None, None, None], [None, None, None], [None, None, None]],
-                  [[None, None, None], [None, None, None], [None, None, None]],
-                  [[None, None, None], [None, None, None], [None, None, None]],
-                  [[None, None, None], [None, None, None], [None, None, None]],
-                  [[None, None, None], [None, None, None], [None, None, None]],
-                  [[None, None, None], [None, None, None], [None, None, None]]]
+    raw_images = json.loads(request.form["images"])
     colours = [[[None, None, None], [None, None, None], [None, None, None]],
               [[None, None, None], [None, None, None], [None, None, None]],
               [[None, None, None], [None, None, None], [None, None, None]],
@@ -35,55 +27,60 @@ def solve():
               [[None, None, None], [None, None, None], [None, None, None]],
               [[None, None, None], [None, None, None], [None, None, None]]]
 
-    for i in range(6):
+    for face in range(6):
         # decode image
-        encoded_image = np.fromstring(base64.b64decode(b64_raw_images[i][21:]), dtype=np.uint8)
-        source = cv2.imdecode(encoded_image, 1)
+        encoded_image = np.fromstring(base64.b64decode(raw_images[face][21:]), dtype=np.uint8)
+        source_image = cv2.imdecode(encoded_image, 1)
 
-        # crop
-        cropped_source = source[17:161, 45:189]     # 144x144 crop
+        # crop to 144x144 (48x48 individual pieces)
+        cropped_source = source_image[17:161, 45:189]
 
-        # individual squares
+        # determine individual pieces
         for row in range(3):
             for column in range(3):
 
-                # slice square
+                # slice into 48x48 piece
                 square = cropped_source[(row * 48):((row + 1) * 48), (column * 48):((column + 1) * 48)]
 
                 # extract colour
                 pixel_colour = square[24, 24]     # midpoint
                 rgb = (pixel_colour[2], pixel_colour[1], pixel_colour[0])
-                colours[i][row][column] = identify_colour(rgb)
+                colours[face][row][column] = identify_colour(rgb)
 
-                # encode square image
-                ret, x = cv2.imencode(".png", square)
-                b64_squares[i][row][column] = "data:image/png;base64," + str(base64.b64encode(x))[2:-1]
+    # manually override each center piece
+    colours[0][1][1] = "g"
+    colours[1][1][1] = "o"
+    colours[2][1][1] = "b"
+    colours[3][1][1] = "r"
+    colours[4][1][1] = "y"
+    colours[5][1][1] = "w"
 
-        print()
+    # generate net
+    net = generate_net(colours)
 
-    colours[5][1][1] = "w" # manually override white center
-    cube_state = generate_cube_state(colours)
-    k_state = kociemba_state(cube_state)
+    # convert net to kociemba-compatible string notation
+    state = kociemba_state(net)
 
-    # for viz
-    cube_state = cube_state[27:36] + cube_state[9:27] + cube_state[:9] + cube_state[36:]
-
-
+    # solve!
     try:
-        solution = kociemba.solve(k_state)
+        solution = kociemba.solve(state)
     except ValueError as e:
         solution = e
 
-    return render_template("solve.html", test="Test", squares=b64_squares, colours=colours, state=cube_state, solution=solution)
+    return render_template("solve.html", solution=solution)
 
 
+"""
+This function takes an tuple rgb of three values (red, blue, and green pixel
+intensity values) and returns one character corresponding to any of the six
+colours on a standard Rubik's cube, depending on which is the best match.
+"""
 def identify_colour(rgb):
-    colour = "indeterminate"
+    colour = ""
 
-    hex = "#%02x%02x%02x" % rgb
-    hue, saturation, value = colorsys.rgb_to_hsv(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255)
+    (hue, saturation, value) = colorsys.rgb_to_hsv(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255)
 
-    # colour logic
+    # colour identification logic
     if (saturation < 0.2):
         colour = "w"
     elif (hue < 0.11):
@@ -97,12 +94,15 @@ def identify_colour(rgb):
     else:
         colour = "r"
 
-    print("{} - ({}, {}, {})".format(hex, hue, saturation, value), file=sys.stderr)
     return colour
 
 
-def generate_cube_state(c):
-    """
+"""
+This function takes a large array c of the colour of every piece on every face
+of the Rubik's cube as determined by the program, and returns one single string
+representation of the current state of the cube, according to the following
+diagram:
+
                  |------------|
                  | U1  U2  U3 |
                  |            |
@@ -123,9 +123,10 @@ def generate_cube_state(c):
                  | D7  D8  D9 |
                  |------------|
 
-    URFDLB
-    """
-
+The string takes the form U1U2U3...R1R2R3...F1...D1...L1...B1, as dictated
+by this implementation of Kociemba's algorithm.
+"""
+def generate_net(c):
     u = [c[4][0][2], c[4][1][2], c[4][2][2], c[4][0][1], c[4][1][1], c[4][2][1], c[4][0][0], c[4][1][0], c[4][2][0]]
     r = [c[3][0][0], c[3][0][1], c[3][0][2], c[3][1][0], c[3][1][1], c[3][1][2], c[3][2][0], c[3][2][1], c[3][2][2]]
     f = [c[2][0][0], c[2][0][1], c[2][0][2], c[2][1][0], c[2][1][1], c[2][1][2], c[2][2][0], c[2][2][1], c[2][2][2]]
@@ -138,8 +139,13 @@ def generate_cube_state(c):
     return state
 
 
+"""
+This function takes a large string c of the colour of every piece on every face
+of the Rubik's cube as determined by the generate_net() function, and replaces
+the individual colour identifiers with a broader positional notation to create
+a new state that can be accepted by Kociemba's algorithm.
+"""
 def kociemba_state(c):
-    # replace colours
     c = c.replace('y', 'U')
     c = c.replace('r', 'R')
     c = c.replace('b', 'F')
@@ -148,3 +154,7 @@ def kociemba_state(c):
     c = c.replace('g', 'B')
 
     return c
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

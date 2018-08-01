@@ -8,17 +8,17 @@ canvas {
 }
 
 #video_box{
-    position:relative;
+    position: relative;
 }
 
 #video_overlays .overlay {
-    position:absolute;
-    width:330px;    /* 300 */
-    height:330px;
-    z-index:300000;
-    bottom:15px;    /* 30 */
-    left:75px;      /* 85 */
-    text-align:center;
+    position: absolute;
+    width: 330px;
+    height: 330px;
+    z-index: 300000;
+    bottom: 15px;
+    left: 75px;
+    text-align: center;
 }
 
 .row{
@@ -26,7 +26,7 @@ canvas {
 }
 
 .column{
-    width:500px;
+    width: 500px;
     display: inline-block;
     text-align: center;
 }

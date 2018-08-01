@@ -37,7 +37,7 @@
 
                     cube.case("{{ solution|safe }}")
 
-                    // render
+                    // render into div
                     cube("#tp1");
                 </script>
             </div>
@@ -48,25 +48,5 @@
             <a href="../">Go back</a>
         </p>
 
-<!--
-        <ul>
-            {% for face in range(6) %}
-            <li>
-                <ul>
-                    {% for row in range(3) %}
-                    <li>
-                        <img src="{{ squares[face][row][0] }}" />
-                        <img src="{{ squares[face][row][1] }}" />
-                        <img src="{{ squares[face][row][2] }}" />
-
-                        {{ colours[face][row][0] }} {{ colours[face][row][1] }} {{ colours[face][row][2] }}
-                    </li>
-                    {% endfor %}
-
-                </ul>
-            </li>
-            {% endfor %}
-        </ul>
--->
     </body>
 </html>
