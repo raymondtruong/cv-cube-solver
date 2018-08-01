@@ -8,6 +8,7 @@ from io import BytesIO
 import numpy as np
 import cv2
 import colorsys
+from app import kociemba # temp
 import sys
 
 
@@ -54,13 +55,20 @@ def solve():
                 rgb = (pixel_colour[2], pixel_colour[1], pixel_colour[0])
                 colours[i][row][column] = identify_colour(rgb)
 
-                # encode square
+                # encode square image
                 ret, x = cv2.imencode(".png", square)
                 b64_squares[i][row][column] = "data:image/png;base64," + str(base64.b64encode(x))[2:-1]
 
         print()
 
-    return render_template("solve.html", test="Test", squares=b64_squares, colours=colours)
+    colours[5][1][1] = "w" # manually override white center
+    state = generate_cube_state(colours)
+    try:
+        solution = kociemba.solve(state)
+    except ValueError as e:
+        solution = e
+
+    return render_template("solve.html", test="Test", squares=b64_squares, colours=colours, solution=solution)
 
 
 def identify_colour(rgb):
@@ -71,18 +79,65 @@ def identify_colour(rgb):
 
     # colour logic
     if (saturation < 0.25):
-        colour = "white"
-    elif (hue > 0.15 and hue < 0.32):
-        colour = "yellow"
+        colour = "w"
+    elif (hue < 0.11):
+        colour = "o"
+    elif (hue >= 0.11 and hue < 0.32):
+        colour = "y"
     elif (hue >= 0.32 and hue < 0.45):
-        colour = "green"
-    elif (hue >= 0.45 and hue < 0.7):
-        colour = "blue"
+        colour = "g"
+    elif (hue >= 0.45 and hue < 0.8):
+        colour = "b"
     else:
-        if (value <= 0.77):
-            colour = "red"
-        else:
-            colour = "orange"
+        colour = "r"
 
     print("{} - ({}, {}, {})".format(hex, hue, saturation, value), file=sys.stderr)
     return colour
+
+
+def generate_cube_state(c):
+    """
+                 |------------|
+                 | U1  U2  U3 |
+                 |            |
+                 | U4  U5  U6 |
+                 |            |
+                 | U7  U8  U9 |
+    |------------|------------|------------|------------|
+    | L1  L2  L3 | F1  F2  F3 | R1  R2  R3 | B1  B2  B3 |
+    |            |            |            |            |
+    | L4  L5  L6 | F4  F5  F6 | R4  R5  R6 | B4  B5  B6 |
+    |            |            |            |            |
+    | L7  L8  L9 | F7  F8  F9 | R7  R8  R9 | B7  B8  B9 |
+    |------------|------------|------------|------------|
+                 | D1  D2  D3 |
+                 |            |
+                 | D4  D5  D6 |
+                 |            |
+                 | D7  D8  D9 |
+                 |------------|
+
+    URFDLB
+    """
+    mappings = {"u": 4, "r": 3, "f": 2, "d": 5, "l": 1, "b": 0}
+
+    u = [c[4][0][2], c[4][1][2], c[4][2][2], c[4][0][1], c[4][1][1], c[4][2][1], c[4][0][0], c[4][1][0], c[4][2][0]]
+    r = [c[3][0][0], c[3][0][1], c[3][0][2], c[3][1][0], c[3][1][1], c[3][1][2], c[3][2][0], c[3][2][1], c[3][2][2]]
+    f = [c[2][0][0], c[2][0][1], c[2][0][2], c[2][1][0], c[2][1][1], c[2][1][2], c[2][2][0], c[2][2][1], c[2][2][2]]
+    d = [c[5][2][0], c[5][1][0], c[5][0][0], c[5][2][1], c[5][1][1], c[5][0][1], c[5][2][2], c[5][1][2], c[5][0][2]]
+    l = [c[1][0][0], c[1][0][1], c[1][0][2], c[1][1][0], c[1][1][1], c[1][1][2], c[1][2][0], c[1][2][1], c[1][2][2]]
+    b = [c[0][0][0], c[0][0][1], c[0][0][2], c[0][1][0], c[0][1][1], c[0][1][2], c[0][2][0], c[0][2][1], c[0][2][2]]
+    net = u + r + f + d + l + b
+
+    state = ''.join(net)
+
+    # replace colours
+    state = state.replace('y', 'U')
+    state = state.replace('g', 'R')
+    state = state.replace('r', 'F')
+    state = state.replace('w', 'D')
+    state = state.replace('b', 'L')
+    state = state.replace('o', 'B')
+
+    print(state, file=sys.stderr)
+    return state
