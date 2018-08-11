@@ -11,6 +11,7 @@
         <script>
             $(document).ready(function(){
                 const faces = ["green", "orange", "blue", "red", "yellow", "white"];
+                const opposite_faces = ["blue", "red", "green", "orange", "white", "yellow"];
                 var i = 0;
                 var images = [];
 
@@ -31,10 +32,21 @@
                     i += 1;
                     cube.forward();
 
+
                     if (i < 6) {
-                        $("#prompt").text("Click screen to capture face " + (i + 1) + " (" + faces[i] + ").");
+                        $("#prompt").html("The " + opposite_faces[i] + " face should be facing you, and the \
+                        <b>" + faces[i] + "</b> face should be facing the camera.<br>Position each piece \
+                        inside the grid, and click the video above to capture face " + (i + 1) + " out of 6.");
+
+                        $("#video_overlays img").attr("src", "static/grid_" + faces[i] + ".png");
                     } else {
-                        $("#prompt").text("All faces captured!");
+                        $("#guide").html("<br>All faces have been captured!");
+                        $("#prompt").text("Click the submit button to review the capture and proceed with the solve.");
+                        $("#video_overlays img").attr("src", "static/grid_black.png");
+                        $("#video_overlays").css("opacity", "0.25");
+                        $("#tp1").css("opacity", "0.25");
+
+
                         $("#submit").prop("disabled", false);
                     }
                 });
@@ -61,7 +73,7 @@
             <div class="column">
                 <div id="video_box">
                     <div id="video_overlays">
-                        <img src="{{ url_for('static', filename='grid.png') }}" class="overlay"/>
+                        <img src="static/grid_green.png" class="overlay"/>
                     </div>
                     <div>
                         <video playsinline autoplay width="480" height="360" id="video"></video>
@@ -97,8 +109,12 @@
         </div>
 
 
-        <p><br>Hold the cube as demonstrated, and position each square inside the grid.<p>
-        <p id="prompt">Click screen to capture face 1 (green).</p>
+        <p id="guide"><br>Hold the cube as demonstrated in the model above.<br></p>
+        <p id="prompt">
+            The blue face should be facing you, and the <b>green</b> face should be facing the camera.
+            <br>
+            Position each piece inside the grid, and click the video above to capture face 1 out of 6.
+        </p>
         <button id="submit" disabled>Submit</button>
         <br>
 

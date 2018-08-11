@@ -64,10 +64,13 @@ def solve():
     # solve!
     try:
         solution = kociemba.solve(state)
-    except ValueError as e:
-        solution = e
+        success = True
 
-    return render_template("solve.html", solution=solution)
+    except ValueError as e:
+        solution = ""
+        success = False
+
+    return render_template("solve.html", solution=solution, success=success)
 
 
 """
