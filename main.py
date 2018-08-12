@@ -16,8 +16,8 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/solve", methods=["POST"])
-def solve():
+@app.route("/preview", methods=["POST"])
+def preview():
 
     raw_images = json.loads(request.form["images"])
     colours = [[[None, None, None], [None, None, None], [None, None, None]],
@@ -55,8 +55,16 @@ def solve():
     colours[4][1][1] = "y"
     colours[5][1][1] = "w"
 
-    # generate net
+    # generate net, then make a new version compatible with the visualization
     net = generate_net(colours)
+    visualization_net = visualize_net(net)
+
+    return render_template("preview.html", net=net, visualization_net=visualization_net)
+
+
+@app.route("/solve", methods=["POST"])
+def solve():
+    net = request.form["net"]
 
     # convert net to kociemba-compatible string notation
     state = kociemba_state(net)
@@ -126,7 +134,7 @@ diagram:
                  | D7  D8  D9 |
                  |------------|
 
-The string takes the form U1U2U3...R1R2R3...F1...D1...L1...B1, as dictated
+The string takes the form U1U2U3...R1R2R3...F1...D1...L1...B1..., as dictated
 by this implementation of Kociemba's algorithm.
 """
 def generate_net(c):
@@ -143,20 +151,38 @@ def generate_net(c):
 
 
 """
-This function takes a large string c of the colour of every piece on every face
-of the Rubik's cube as determined by the generate_net() function, and replaces
-the individual colour identifiers with a broader positional notation to create
-a new state that can be accepted by Kociemba's algorithm.
+This function takes a large string net of the colour of every piece on every
+face of the Rubik's cube as determined by the generate_net() function, and
+rearranges the pieces in a way that the visualization library can properly
+display.
 """
-def kociemba_state(c):
-    c = c.replace('y', 'U')
-    c = c.replace('r', 'R')
-    c = c.replace('b', 'F')
-    c = c.replace('w', 'D')
-    c = c.replace('o', 'L')
-    c = c.replace('g', 'B')
+def visualize_net(net):
+    # rearrange faces
+    new_net = net[33:36] + net[30:33] + net[27:30]
+    new_net += net[15:18] + net[12:15] + net[9:12]
+    new_net += net[24:27] + net[21:24] + net[18:21]
+    new_net += net[6:9] + net[3:6] + net[0:3]
+    new_net += net[42:45] + net[39:42] + net[36:39]
+    new_net += net[51:54] + net[48:51] + net[45:48]
 
-    return c
+    return new_net
+
+
+"""
+This function takes a large string net of the colour of every piece on every
+face of the Rubik's cube as determined by the generate_net() function, and
+replaces the individual colour identifiers with a broader positional notation
+to create a new state that can be accepted by Kociemba's algorithm.
+"""
+def kociemba_state(net):
+    net = net.replace('y', 'U')
+    net = net.replace('r', 'R')
+    net = net.replace('b', 'F')
+    net = net.replace('w', 'D')
+    net = net.replace('o', 'L')
+    net = net.replace('g', 'B')
+
+    return net
 
 
 if __name__ == "__main__":

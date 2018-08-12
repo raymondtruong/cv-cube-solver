@@ -1,0 +1,71 @@
+<html>
+    <head>
+        <title>CV Cube Solver</title>
+
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+        <link rel='shortcut icon' type='image/x-icon' href="{{ url_for('static', filename='favicon.ico') }}"/>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='twistysim.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery.redirect.js') }}"></script>
+
+        <script>
+        $(document).ready(function(){
+
+            $("#submit").click(function(){
+                $.redirect("/solve", {"net": "{{ net }}"});
+            });
+
+            $("#back").click(function(){
+                window.location.replace("/");
+            });
+        });
+        </script>
+    </head>
+
+    <body>
+        <p>
+            <h1>CV Cube Solver</h1>
+            <a href="truo.ng">by Raymond Truong</a>
+            <br><br>
+        </p>
+
+        <div class="row">
+            <div class="column">
+                <div id="tp1"></div>
+                <script>
+                    // generate cube
+                    var cube = TTk.InteractivePuzzle(3)
+                        .size({width:300, height:300})
+                        .rotate(true);
+
+                    // lock cube
+                    cube.moveInteract()
+	                    .mouse(false)
+	                    .keyboard(false);
+
+                    // initial state
+                    cube.fc("{{ visualization_net }}")
+
+                    // render into div
+                    cube("#tp1");
+                </script>
+            </div>
+        </div>
+
+        <p>
+            <br>Compare the model above to the cube that you are holding. <br>
+            Click and drag to rotate and interact with the model. <br>
+            Confirm that each piece has the correct colour. <br>
+
+            <br>
+            Looks good? Solve:<br>
+            <button id="submit">Submit</button>
+
+            <br><br>
+            Not quite? Recapture:<br>
+            <button id="back">Go back</button>
+        </p>
+
+    </body>
+</html>

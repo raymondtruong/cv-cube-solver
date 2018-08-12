@@ -35,9 +35,9 @@
 
 
                     if (i < 6) {
-                        $("#prompt").html("The " + opposite_faces[i] + " face should be facing you, and the \
+                        $("#prompt").html("The <b>" + opposite_faces[i] + "</b> face should be facing you, and the \
                         <b>" + faces[i] + "</b> face should be facing the camera.<br>Position each piece \
-                        inside the grid, and click the video above to capture face " + (i + 1) + " out of 6.");
+                        inside the grid, and click the video above to capture face <b>" + (i + 1) + "</b> out of 6.");
 
                         $("#video_overlays img").attr("src", "static/grid_" + faces[i] + ".png");
                     } else {
@@ -54,7 +54,7 @@
 
                 // submit all faces via POST request and redirect
                 $("#submit").click(function(){
-                    $.redirect("/solve", {"images": JSON.stringify(images)});
+                    $.redirect("/preview", {"images": JSON.stringify(images)});
                 });
 
             });
@@ -112,9 +112,9 @@
 
         <p id="guide"><br>Hold the cube as demonstrated in the model above.<br></p>
         <p id="prompt">
-            The blue face should be facing you, and the <b>green</b> face should be facing the camera.
+            The <b>blue</b> face should be facing you, and the <b>green</b> face should be facing the camera.
             <br>
-            Position each piece inside the grid, and click the video above to capture face 1 out of 6.
+            Position each piece inside the grid, and click the video above to capture face <b>1</b> out of 6.
         </p>
         <button id="submit" disabled>Submit</button>
         <br>
