@@ -3,6 +3,7 @@
         <title>CV Cube Solver</title>
 
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
         <link rel='shortcut icon' type='image/x-icon' href="{{ url_for('static', filename='favicon.ico') }}"/>
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -24,11 +25,11 @@
     </head>
 
     <body>
-        <p>
+        <div class="header">
             <h1>CV Cube Solver</h1>
-            <a href="truo.ng">by Raymond Truong</a>
-            <br><br>
-        </p>
+            <a href="https://truo.ng">by Raymond Truong</a>
+            <br><br><hr>
+        </div>
 
         <div class="row">
             <div class="column">
@@ -67,5 +68,9 @@
             <button id="back">Go back</button>
         </p>
 
+        <div class="footer">
+            <hr>
+            <p>&copy; 2018 | <a href="https://github.com/raymondtruong/cv-cube-solver">source code</a></p>
+        </div>
     </body>
 </html>
